@@ -1,40 +1,68 @@
-// Conecte-se ao banco de dados
-use sbr
+// Connect to the database
+// use study-bible-reading-dev
 
-// Criar coleções
+// Create collections
 db.createCollection("publishers")
 db.createCollection("translations")
 db.createCollection("bibles")
 db.createCollection("books")
 db.createCollection("articles")
+db.createCollection("reading_plans")
 db.createCollection("full_readings")
 db.createCollection("plan_readings")
 db.createCollection("partial_readings")
-db.createCollection("reading_plans")
+db.createCollection("books_partial_readings")
+db.createCollection("users")
 
-// Criar índices
+// Create indexes
 db.bibles.createIndex({ publisherId: 1 })
 db.bibles.createIndex({ translationId: 1 })
 db.books.createIndex({ bibleId: 1 })
 db.articles.createIndex({ bibleId: 1 })
+db.full_readings.createIndex({ bibleId: 1 })
+// db.full_readings.createIndex({ userId: 1 })
+// db.full_readings.createIndex(
+//     { bibleId: 1, userId: 1 },
+//     { unique: true }
+// )
+db.plan_readings.createIndex({ readingPlanId: 1 })
+// db.plan_readings.createIndex({ userId: 1 })
+// db.plan_readings.createIndex(
+//     { readingPlanId: 1, userId: 1 },
+//     { unique: true }
+// )
+//db.partial_readings.createIndex({ userId: 1 })
+db.books_partial_readings.createIndex({ bookId: 1 })
+db.books_partial_readings.createIndex({ partialPlanId: 1 })
+db.books_partial_readings.createIndex(
+    { bookId: 1, partialPlanId: 1 },
+    { unique: true }
+)
 
-// Inserir dados de exemplo
+// Insert sample data
 
-// Editora
+//User
+// db.users.insertOne({
+//     name: "John Doe",
+//     email: "john.doe@example.com",
+//     password: "password"
+// })
+
+// Publisher
 db.publishers.insertOne({
     name: "Sociedade Bíblica do Brasil",
-    bibles: []
+    //bibles: []
 })
 
-// Tradução
+// Translation
 db.translations.insertOne({
     description: "Nova Almeida Atualizada",
     acronym: "NAA",
     tradition: "Protestant",
-    bibles: []
+    //bibles: []
 })
 
-// Bíblia
+// Bible
 db.bibles.insertOne({
     title: "Bíblia de Estudo NAA",
     publisherId: db.publishers.findOne()._id,
@@ -46,7 +74,7 @@ db.bibles.insertOne({
     articles: []
 })
 
-// Livro
+// Book
 db.books.insertOne({
     bibleId: db.bibles.findOne()._id,
     name: "Gênesis",
@@ -109,7 +137,7 @@ db.books.insertOne({
     readingQuantity: 0
 })
 
-// Artigo
+// Article
 db.articles.insertOne({
     bibleId: db.bibles.findOne()._id,
     name: "Introdução",
@@ -118,7 +146,7 @@ db.articles.insertOne({
     isRead: false
 })
 
-// Plano de Leitura
+// Reading Plan
 db.reading_plans.insertOne({
     name: "Plano de leitura de Robert Roberts",
     description: "No plano de Robert Roberts são lidas diariamente porções do Antigo e do Novo Testamentos, e, ao final de um ano, o Novo Testamento terá sido lido duas vezes",
@@ -127,14 +155,14 @@ db.reading_plans.insertOne({
         {
             date: new Date("2025-01-01T00:00:00Z"),
             description: "Gn 1-2; Sl 1-2; Mt 1-2",
-			chapters: [
-				{ abbreviation: "Gn", chapter: 1 },
-				{ abbreviation: "Gn", chapter: 2 },
-				{ abbreviation: "Sl", chapter: 1 },
-				{ abbreviation: "Sl", chapter: 2 },
-				{ abbreviation: "Mt", chapter: 1 },
-				{ abbreviation: "Mt", chapter: 2 },
-			],
+            chapters: [
+                { abbreviation: "Gn", chapter: 1 },
+                { abbreviation: "Gn", chapter: 2 },
+                { abbreviation: "Sl", chapter: 1 },
+                { abbreviation: "Sl", chapter: 2 },
+                { abbreviation: "Mt", chapter: 1 },
+                { abbreviation: "Mt", chapter: 2 },
+            ],
             isRead: false
         }
     ],
@@ -143,28 +171,40 @@ db.reading_plans.insertOne({
     durationInYears: 1
 })
 
-// Leitura Completa
+// Full Reading
 db.full_readings.insertOne({
-    startDate: new Date(),
+    startDate: new Date("2022-11-08T00:00:00Z"),
+    expectedEndDate: null,
     endDate: null,
     completed: false,
-    bibleId: db.bibles.findOne()._id
+    bibleId: db.bibles.findOne()._id,
+    // userId: db.users.findOne()._id
 })
 
-// Leitura de Plano
+// Plan Reading
 db.plan_readings.insertOne({
-    startDate: new Date(),
+    startDate: new Date("2025-01-01T00:00:00Z"),
+    expectedEndDate: new Date("2025-12-31T00:00:00Z"),
     endDate: null,
     completed: false,
-    planId: db.reading_plans.findOne()._id
+    readingPlanId: db.reading_plans.findOne()._id,
+    // userId: db.users.findOne()._id
 })
 
-// Leitura Parcial
+// Partial Reading
 db.partial_readings.insertOne({
-    startDate: new Date(),
+    startDate: new Date("2025-01-01T00:00:00Z"),
+    expectedEndDate: new Date("2025-01-31T00:00:00Z"),
     endDate: null,
     completed: false,
-    books: [db.books.findOne()._id]
+    books: [db.books.findOne()._id],
+    // userId: db.users.findOne()._id
 })
 
-print("Inicialização do banco de dados concluída!")
+// Books Partial Reading (intermediate collection)
+db.books_partial_readings.insertOne({
+    bookId: db.books.findOne()._id,
+    partialPlanId: db.partial_readings.findOne()._id
+})
+
+print("Database initialization complete!")
